@@ -4,6 +4,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.validation.constraints.*;
 
 
 @Entity
@@ -13,12 +14,20 @@ public class User {
     @GeneratedValue
     private Long id;
 
+    @NotNull
+    @NotBlank
+    @Size(min = 3, max = 30)
     private String name;
 
+    @NotNull
+    @NotBlank
+    @Size(min = 3, max = 30)
     private String lastname;
 
+    @NotNull
+    @Min(value = 20)
+    @Max(value = 25)
     private int age;
-
 
     public User() {
     }
@@ -32,6 +41,7 @@ public class User {
     public Long getId() {
         return id;
     }
+
 
     public void setId(Long id) {
         this.id = id;
