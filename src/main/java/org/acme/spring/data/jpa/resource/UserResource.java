@@ -4,6 +4,8 @@ import org.acme.spring.data.jpa.exception.UserNotFoundException;
 import org.acme.spring.data.jpa.model.User;
 import org.acme.spring.data.jpa.service.UserService;
 import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.validation.Valid;
@@ -16,6 +18,9 @@ import java.util.Optional;
 
 @Path("/users")
 public class UserResource {
+
+    private final Logger logger = LoggerFactory.getLogger(UserResource.class);
+
 
     @Inject
     private UserService userService;
@@ -31,10 +36,12 @@ public class UserResource {
         list.forEach(result::add);
 
         if (result.isEmpty()) {
+            logger.info("no results");
             return Response.noContent().build();
-        } else {
-            return Response.ok().entity(result).build();
 
+        } else {
+            logger.info("information returned successfully");
+            return Response.ok().entity(result).build();
         }
     }
 
@@ -44,8 +51,8 @@ public class UserResource {
     public Response findByName(@PathParam("name") String name) {
 
         List<User> users = userService.findByName(name);
-
         if (users.isEmpty()) {
+            logger.info("there are no users with that name");
             return Response.noContent().build();
         } else {
             return Response.ok().entity(users).build();
@@ -55,13 +62,13 @@ public class UserResource {
     @DELETE
     @Path("{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response delete(@PathParam("id") long id) {
-
+    public void delete(@PathParam("id") long id) throws UserNotFoundException {
         Optional<User> optionalUser = userService.findById(id);
         if (optionalUser.isPresent()) {
+            logger.info("user deleted successfully");
             userService.deleteById(id);
-            return Response.ok().build();
         } else {
+            logger.warn("user not found");
             throw new UserNotFoundException(id);
         }
     }
@@ -70,22 +77,29 @@ public class UserResource {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public Response create(@RequestBody @Valid User user) {
-        User user1 = userService.save(user);
-        return Response.ok().entity(user1).build();
+        User us = userService.save(user);
+        if (us != null) {
+            logger.info("user created successfully");
+            return Response.ok().entity(us).build();
+        }
+        return Response.status(Response.Status.BAD_REQUEST).entity("repeat user").build();
     }
 
     @PUT
     @Path("id/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response changeUser(@PathParam("id") Long id, @RequestBody @Valid User userChanged)  {
-        Optional<User> user = userService.findById(id);
-        if (user.isPresent()) {
-                User us = user.get();
-                us.setName(userChanged.getName());
-                us.setLastname(userChanged.getLastname());
-                us.setAge(userChanged.getAge());
-                return Response.ok(userService.save(us)).build();
+    public Response changeUser(@PathParam("id") Long id, @RequestBody @Valid User userChanged) throws UserNotFoundException {
+        Optional<User> us = userService.findById(id);
+        if (us.isPresent()) {
+            us.get().setName(userChanged.getName());
+            us.get().setLastname(userChanged.getLastname());
+            us.get().setAge(userChanged.getAge());
+            if (userService.correctData(us.get())) {
+                return Response.ok().entity(userService.save(us.get())).build();
+            } else {
+                return Response.notModified().build();
+            }
         } else {
             throw new UserNotFoundException(id);
         }
