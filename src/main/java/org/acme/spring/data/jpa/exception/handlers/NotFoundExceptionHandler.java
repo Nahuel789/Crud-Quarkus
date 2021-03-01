@@ -1,4 +1,4 @@
-package org.acme.spring.data.jpa.exception;
+package org.acme.spring.data.jpa.exception.handlers;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,7 +15,7 @@ public class NotFoundExceptionHandler implements ExceptionMapper<NotFoundExcepti
 
     @Override
     public Response toResponse(NotFoundException exception) {
-        LOGGER.warn("user not found:", exception);
+        LOGGER.warn("not found:"+exception.getMessage());
         return Response.status(Response.Status.NOT_FOUND).entity(exception.getMessage()).build();
     }
 }

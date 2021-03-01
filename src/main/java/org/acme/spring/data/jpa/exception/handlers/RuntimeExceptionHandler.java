@@ -1,4 +1,4 @@
-package org.acme.spring.data.jpa.exception;
+package org.acme.spring.data.jpa.exception.handlers;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -82,10 +82,10 @@ public class UserResource {
             logger.info("user created successfully");
             return Response.ok().entity(us).build();
         }
-        return Response.status(Response.Status.BAD_REQUEST).entity("repeat user").build();
+        return Response.status(Response.Status.BAD_REQUEST).entity("Repeat user").build();
     }
 
-    @PUT
+    @PATCH
     @Path("id/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
@@ -95,10 +95,11 @@ public class UserResource {
             us.get().setName(userChanged.getName());
             us.get().setLastname(userChanged.getLastname());
             us.get().setAge(userChanged.getAge());
-            if (userService.correctData(us.get())) {
-                return Response.ok().entity(userService.save(us.get())).build();
+            User usChanged = userService.save(us.get());
+            if (usChanged != null) {
+                return Response.ok().entity(usChanged).build();
             } else {
-                return Response.notModified().build();
+                return Response.notModified().entity("Repeat user").build();
             }
         } else {
             throw new UserNotFoundException(id);
